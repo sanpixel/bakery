@@ -225,10 +225,21 @@ app.post('/api/chat', async (req, res) => {
     
     console.log('Processing message:', message);
     
+    // Read prompt from file
+    const promptPath = path.join(__dirname, 'prompt.txt');
+    let systemPrompt = "Summarize the user input like Shakespeare. Return a single line so that can be added to the todo list.";
+    
+    try {
+      systemPrompt = fs.readFileSync(promptPath, 'utf8').trim();
+      console.log('Using prompt from file:', systemPrompt);
+    } catch (error) {
+      console.log('Using default prompt, file not found:', error.message);
+    }
+    
     const completion = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [
-        { role: "system", content: "Parse the user input and create todo tasks. Break down complex requests into simple actionable tasks. Return a JSON array of task descriptions as strings. Example: [\"Buy groceries\", \"Call dentist\", \"Finish report\"]" },
+        { role: "system", content: systemPrompt },
         { role: "user", content: message }
       ],
       temperature: 0.3
@@ -237,37 +248,16 @@ app.post('/api/chat', async (req, res) => {
     const response = completion.choices[0].message.content;
     console.log('OpenAI response:', response);
     
-    try {
-      const todos = JSON.parse(response);
-      const createdTodos = [];
-      
-      if (Array.isArray(todos)) {
-        for (const todoDescription of todos) {
-          const countResult = await pool.query(`SELECT COUNT(*) FROM ${TODO_TABLE}`);
-          const itemNumber = parseInt(countResult.rows[0].count) + 1;
-          
-          const result = await pool.query(
-            `INSERT INTO ${TODO_TABLE} (item_number, description) VALUES ($1, $2) RETURNING *`,
-            [itemNumber, todoDescription]
-          );
-          createdTodos.push(result.rows[0]);
-        }
-      }
-      
-      res.json({ aiResponse: `Created ${createdTodos.length} tasks`, todos: createdTodos });
-    } catch (parseError) {
-      console.error('Parse error:', parseError);
-      // If JSON parsing fails, create a single todo from the raw response
-      const countResult = await pool.query(`SELECT COUNT(*) FROM ${TODO_TABLE}`);
-      const itemNumber = parseInt(countResult.rows[0].count) + 1;
-      
-      const result = await pool.query(
-        `INSERT INTO ${TODO_TABLE} (item_number, description) VALUES ($1, $2) RETURNING *`,
-        [itemNumber, message]
-      );
-      
-      res.json({ aiResponse: 'Created 1 task from your input', todos: [result.rows[0]] });
-    }
+    // Create a single todo from the Shakespeare response
+    const countResult = await pool.query(`SELECT COUNT(*) FROM ${TODO_TABLE}`);
+    const itemNumber = parseInt(countResult.rows[0].count) + 1;
+    
+    const result = await pool.query(
+      `INSERT INTO ${TODO_TABLE} (item_number, description) VALUES ($1, $2) RETURNING *`,
+      [itemNumber, response]
+    );
+    
+    res.json({ aiResponse: `Created: "${response}"`, todos: [result.rows[0]] });
   } catch (error) {
     console.error('Chat endpoint error:', error);
     res.status(500).json({ error: error.message, aiResponse: 'Error processing your request' });
