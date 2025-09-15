@@ -1,13 +1,74 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
+const { createClient } = require('@supabase/supabase-js');
+const { Pool } = require('pg');
+const OpenAI = require('openai');
+
+// Load OpenAI API key from C:\dev\openai-key.json
+let OPENAI_API_KEY = null;
+try {
+  const openaiConfig = JSON.parse(fs.readFileSync('C:\\dev\\openai-key.json', 'utf8'));
+  OPENAI_API_KEY = openaiConfig.OPENAI_API_KEY;
+  console.log('✅ OpenAI API key loaded from C:\\dev\\openai-key.json');
+} catch (error) {
+  console.log('❌ OpenAI key file not found at C:\\dev\\openai-key.json');
+}
+
+// Initialize OpenAI client
+let openai = null;
+if (OPENAI_API_KEY) {
+  openai = new OpenAI({
+    apiKey: OPENAI_API_KEY
+  });
+}
+
+// Table names based on repo/app name
+const APP_NAME = path.basename(process.cwd()).replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+const TODO_TABLE = `${APP_NAME}_todo_items`;
+
+// Supabase client
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+);
+
+// PostgreSQL pool
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
 app.use(cors());
 app.use(express.json());
+
+// Database initialization
+async function initDatabase() {
+  try {
+    // Create TODO items table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS ${TODO_TABLE} (
+        id SERIAL PRIMARY KEY,
+        item_number INTEGER NOT NULL,
+        description TEXT NOT NULL,
+        completed BOOLEAN DEFAULT FALSE,
+        created TIMESTAMP DEFAULT NOW(),
+        modified TIMESTAMP DEFAULT NOW()
+      )
+    `);
+    
+    console.log('✅ Database initialized');
+  } catch (error) {
+    console.error('❌ Database initialization error:', error);
+  }
+}
+
+initDatabase();
 
 // Serve static files from React build
 app.use(express.static(path.join(__dirname, '../frontend/build')));
@@ -76,6 +137,101 @@ app.get('/files', (req, res) => {
   `;
   
   res.send(html);
+});
+
+// TODO CRUD endpoints
+app.get('/api/todos', async (req, res) => {
+  try {
+    const result = await pool.query(`SELECT * FROM ${TODO_TABLE} ORDER BY item_number`);
+    res.json(result.rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/todos', async (req, res) => {
+  try {
+    const { description } = req.body;
+    const countResult = await pool.query(`SELECT COUNT(*) FROM ${TODO_TABLE}`);
+    const itemNumber = parseInt(countResult.rows[0].count) + 1;
+    
+    const result = await pool.query(
+      `INSERT INTO ${TODO_TABLE} (item_number, description) VALUES ($1, $2) RETURNING *`,
+      [itemNumber, description]
+    );
+    res.json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put('/api/todos/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { description, completed } = req.body;
+    
+    const result = await pool.query(
+      `UPDATE ${TODO_TABLE} SET description = $1, completed = $2, modified = NOW() WHERE id = $3 RETURNING *`,
+      [description, completed, id]
+    );
+    res.json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/todos/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await pool.query(`DELETE FROM ${TODO_TABLE} WHERE id = $1`, [id]);
+    res.json({ message: 'Todo deleted' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// OpenAI chat endpoint
+app.post('/api/chat', async (req, res) => {
+  try {
+    const { message } = req.body;
+    
+    if (!openai) {
+      return res.status(500).json({ error: 'OpenAI not configured' });
+    }
+    
+    const completion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        { role: "system", content: "Parse user input and extract todo items. Return a JSON array of todo descriptions." },
+        { role: "user", content: message }
+      ],
+      temperature: 0.3
+    });
+    
+    const response = completion.choices[0].message.content;
+    
+    try {
+      const todos = JSON.parse(response);
+      const createdTodos = [];
+      
+      for (const todoDescription of todos) {
+        const countResult = await pool.query(`SELECT COUNT(*) FROM ${TODO_TABLE}`);
+        const itemNumber = parseInt(countResult.rows[0].count) + 1;
+        
+        const result = await pool.query(
+          `INSERT INTO ${TODO_TABLE} (item_number, description) VALUES ($1, $2) RETURNING *`,
+          [itemNumber, todoDescription]
+        );
+        createdTodos.push(result.rows[0]);
+      }
+      
+      res.json({ todos: createdTodos, aiResponse: response });
+    } catch (parseError) {
+      res.json({ aiResponse: response, todos: [] });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Catch-all handler: send back React's index.html file for any non-API routes
