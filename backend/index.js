@@ -184,6 +184,26 @@ app.put('/api/todos/:id', async (req, res) => {
   }
 });
 
+app.patch('/api/todos/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+    
+    // Build dynamic query based on provided fields
+    const fields = Object.keys(updates);
+    const values = Object.values(updates);
+    const setClause = fields.map((field, index) => `${field} = $${index + 1}`).join(', ');
+    
+    const result = await pool.query(
+      `UPDATE ${TODO_TABLE} SET ${setClause}, modified = NOW() WHERE id = $${fields.length + 1} RETURNING *`,
+      [...values, id]
+    );
+    res.json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.delete('/api/todos/:id', async (req, res) => {
   try {
     const { id } = req.params;

@@ -35,11 +35,11 @@ function TodoApp() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ text: inputText }),
+        body: JSON.stringify({ message: inputText }),
       });
 
       const result = await response.json();
-      setAiResponse(result.response || 'No response received');
+      setAiResponse(result.aiResponse || 'No response received');
 
       // Refresh todos after potential creation
       await fetchTodos();
@@ -86,85 +86,85 @@ function TodoApp() {
       </header>
 
       <main className="todo-main">
-        <div className="cards-container">
-          
-          {/* Text Input Card */}
-          <div className="card input-card">
-            <div className="card-header">
-              <h2 className="card-title">📝 Add Tasks</h2>
+        {/* Text Input Section - Like SurveyDisco */}
+        <div className="text-input-container">
+          <form onSubmit={handleSubmit} className="text-input-form">
+            <textarea
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              placeholder="Copy and paste your tasks or just type what you need to do and I'll help organize it into tasks... (Ctrl+Enter to process)"
+              className="text-input"
+              rows={6}
+              disabled={loading}
+              onKeyDown={(e) => {
+                if (e.ctrlKey && e.key === 'Enter') {
+                  handleSubmit(e);
+                }
+              }}
+            />
+            <div className="text-input-actions">
+              <button 
+                type="submit" 
+                disabled={!inputText.trim() || loading}
+                className="process-btn"
+              >
+                {loading ? 'Processing...' : 'Add Tasks'}
+              </button>
+              <button 
+                type="button" 
+                onClick={() => setInputText('')}
+                disabled={!inputText || loading}
+                className="clear-btn"
+              >
+                Clear
+              </button>
             </div>
-            <div className="card-body">
-              <form onSubmit={handleSubmit}>
-                <textarea
-                  value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
-                  placeholder="Type what you need to do... I'll help organize it into tasks!"
-                  disabled={loading}
-                  className="text-input"
-                  rows="4"
-                />
-                <button
-                  type="submit"
-                  disabled={loading || !inputText.trim()}
-                  className="submit-btn"
-                >
-                  {loading ? 'Processing...' : 'Add Tasks'}
-                </button>
-              </form>
-            </div>
-          </div>
+          </form>
+        </div>
 
-          {/* AI Response Card */}
-          {aiResponse && (
-            <div className="card response-card">
-              <div className="card-header">
-                <h2 className="card-title">🤖 AI Response</h2>
-              </div>
-              <div className="card-body">
-                <div className="ai-response">{aiResponse}</div>
-              </div>
+        {/* AI Response Section */}
+        {aiResponse && (
+          <div className="ai-response-container">
+            <h3>AI Response:</h3>
+            <div className="ai-response">{aiResponse}</div>
+          </div>
+        )}
+
+        {/* Todo Cards Grid - Like SurveyDisco ProjectCards */}
+        <div className="todos-grid">
+          {todos.length === 0 ? (
+            <div className="empty-state">
+              No tasks yet. Add some using the text input above!
             </div>
+          ) : (
+            todos.map((todo) => (
+              <div key={todo.id} className={`todo-card ${todo.completed ? 'completed' : ''}`}>
+                <div className="todo-card-header">
+                  <div className="todo-number">#{todo.item_number}</div>
+                  <div className="todo-status">{todo.completed ? '✅ Done' : '🔘 Active'}</div>
+                </div>
+                
+                <div className="todo-card-body">
+                  <div className="todo-description">{todo.description}</div>
+                </div>
+                
+                <div className="todo-card-actions">
+                  <button
+                    onClick={() => toggleTodo(todo.id, todo.completed)}
+                    className={`btn-action ${todo.completed ? 'btn-undo' : 'btn-done'}`}
+                  >
+                    {todo.completed ? 'Undo' : 'Mark Done'}
+                  </button>
+                  <button
+                    onClick={() => deleteTodo(todo.id)}
+                    className="btn-action btn-delete"
+                  >
+                    🗑️ Delete
+                  </button>
+                </div>
+              </div>
+            ))
           )}
-
-          {/* Todo List Card */}
-          <div className="card todos-card">
-            <div className="card-header">
-              <h2 className="card-title">✅ Tasks ({todos.length})</h2>
-            </div>
-            <div className="card-body">
-              {todos.length === 0 ? (
-                <div className="empty-state">
-                  No tasks yet. Add some using the text input above!
-                </div>
-              ) : (
-                <div className="todo-list">
-                  {todos.map((todo) => (
-                    <div key={todo.id} className={`todo-item ${todo.completed ? 'completed' : ''}`}>
-                      <div className="todo-number">{todo.item_number}</div>
-                      <div className="todo-content">
-                        <span className="todo-text">{todo.description}</span>
-                      </div>
-                      <div className="todo-actions">
-                        <button
-                          onClick={() => toggleTodo(todo.id, todo.completed)}
-                          className={`action-btn ${todo.completed ? 'undo-btn' : 'done-btn'}`}
-                        >
-                          {todo.completed ? 'Undo' : 'Done'}
-                        </button>
-                        <button
-                          onClick={() => deleteTodo(todo.id)}
-                          className="action-btn delete-btn"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
         </div>
 
         <div className="back-link">
