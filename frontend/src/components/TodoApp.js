@@ -97,20 +97,15 @@ function TodoApp() {
 
   return (
     <div className="App">
-      <header className="App-header">
-        <h1>SurveyDisco.ai</h1>
-        <p>Project Management</p>
-      </header>
       <main className="App-main">
-        {/* Text Input - Like SurveyDisco */}
         <div className="text-input-container">
           <form onSubmit={handleSubmit} className="text-input-form">
             <textarea
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder="Copy and Paste an email or just type as much as little project information here and I'll take care of the rest ... (Ctrl+Enter to process)"
+              placeholder="Type what you need to do..."
               className="text-input"
-              rows={6}
+              rows={4}
               disabled={loading}
               onKeyDown={(e) => {
                 if (e.ctrlKey && e.key === 'Enter') {
@@ -124,7 +119,7 @@ function TodoApp() {
                 disabled={!inputText.trim() || loading}
                 className="process-btn"
               >
-                {loading ? 'Processing...' : 'Add Project'}
+                {loading ? 'Processing...' : 'Add'}
               </button>
               <button 
                 type="button" 
@@ -138,17 +133,8 @@ function TodoApp() {
           </form>
         </div>
 
-        {/* Projects Grid - Empty State */}
-        <div className="cards-container">
-          <div className="empty-state">
-            No projects yet. Add one using the text input above.
-          </div>
-        </div>
-
-        {/* TODO Card - Like SurveyDisco */}
         <div className="todo-card">
           <div className="card-header">
-            <div className="todo-title">📝 TODO</div>
             <div className="todo-count">{todos.length} items</div>
           </div>
 
@@ -158,7 +144,7 @@ function TodoApp() {
                 type="text"
                 value={newTodo}
                 onChange={(e) => setNewTodo(e.target.value)}
-                placeholder="Add new todo item..."
+                placeholder="Add item..."
                 className="todo-input"
               />
               <button type="submit" className="add-btn">Add</button>
@@ -168,9 +154,7 @@ function TodoApp() {
               {todos.map((todo) => (
                 <div key={todo.id} className={`todo-item ${todo.completed ? 'completed' : ''}`}>
                   <span className="todo-number">{todo.item_number}.</span>
-                  
                   <span className="todo-text">{todo.description}</span>
-
                   <div className="todo-actions">
                     <input
                       type="checkbox"
@@ -181,7 +165,6 @@ function TodoApp() {
                     <button
                       onClick={() => deleteTodo(todo.id)}
                       className="delete-todo-btn"
-                      title="Delete"
                     >
                       ✕
                     </button>
@@ -192,14 +175,10 @@ function TodoApp() {
 
             {todos.length === 0 && (
               <div className="empty-todos">
-                No TODO items yet. Add one above to get started!
+                No items yet.
               </div>
             )}
           </div>
-        </div>
-
-        <div style={{ textAlign: 'center', marginTop: '30px' }}>
-          <a href="/" style={{ color: '#007bff' }}>← Back to Auth</a>
         </div>
       </main>
     </div>
