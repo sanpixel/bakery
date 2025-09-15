@@ -134,9 +134,6 @@ function TodoApp() {
         </div>
 
         <div className="todo-card">
-          <div className="card-header">
-            <div className="todo-count">{todos.length} items</div>
-          </div>
 
           <div className="todo-body">
             <form onSubmit={addTodo} className="add-todo-form">
@@ -153,7 +150,6 @@ function TodoApp() {
             <div className="todo-list">
               {todos.map((todo) => (
                 <div key={todo.id} className={`todo-item ${todo.completed ? 'completed' : ''}`}>
-                  <span className="todo-number">{todo.item_number}.</span>
                   <span className="todo-text">{todo.description}</span>
                   <div className="todo-actions">
                     <input
