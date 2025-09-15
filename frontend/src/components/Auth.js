@@ -79,7 +79,7 @@ export default function Auth() {
     <>
       <img src={logo} className="App-logo" alt="logo" />
       <p>
-        Welcome to <code>bakery</code> - Supabase OAuth Demo
+        Welcome to <code>bakery</code> - Supabase OAuth OpenAI Demo
       </p>
       
       {/* Todo App Button */}
