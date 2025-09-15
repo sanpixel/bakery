@@ -107,7 +107,7 @@ export default function Auth() {
         </a>
       </div>
       
-      <button
+      <button onClick={signInWithGoogle}>
         Sign in with Google
       </button>
       {!config && <p style={{color: 'red', fontSize: '12px'}}>Config not loaded</p>}
