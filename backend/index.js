@@ -7,14 +7,18 @@ const { createClient } = require('@supabase/supabase-js');
 const { Pool } = require('pg');
 const OpenAI = require('openai');
 
-// Load OpenAI API key from C:\dev\openai-key.json
-let OPENAI_API_KEY = null;
-try {
-  const openaiConfig = JSON.parse(fs.readFileSync('C:\\dev\\openai-key.json', 'utf8'));
-  OPENAI_API_KEY = openaiConfig.OPENAI_API_KEY;
-  console.log('✅ OpenAI API key loaded from C:\\dev\\openai-key.json');
-} catch (error) {
-  console.log('❌ OpenAI key file not found at C:\\dev\\openai-key.json');
+// Load OpenAI API key from environment variable or local file
+let OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+if (!OPENAI_API_KEY) {
+  try {
+    const openaiConfig = JSON.parse(fs.readFileSync('C:\\dev\\openai-key.json', 'utf8'));
+    OPENAI_API_KEY = openaiConfig.OPENAI_API_KEY;
+    console.log('✅ OpenAI API key loaded from C:\\dev\\openai-key.json');
+  } catch (error) {
+    console.log('❌ OpenAI key not found in environment variable or local file');
+  }
+} else {
+  console.log('✅ OpenAI API key loaded from environment variable');
 }
 
 // Initialize OpenAI client

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import './TodoApp.css';
 
 function TodoApp() {
   const [todos, setTodos] = useState([]);
@@ -6,7 +7,6 @@ function TodoApp() {
   const [loading, setLoading] = useState(false);
   const [aiResponse, setAiResponse] = useState('');
 
-  // Fetch todos on component mount
   useEffect(() => {
     fetchTodos();
   }, []);
@@ -26,44 +26,44 @@ function TodoApp() {
     if (!inputText.trim()) return;
 
     setLoading(true);
+    setAiResponse('');
+
     try {
-      // Send to OpenAI chat endpoint
+      // Call OpenAI endpoint
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message: inputText }),
+        body: JSON.stringify({ text: inputText }),
       });
 
-      const data = await response.json();
-      setAiResponse(data.aiResponse);
-      
-      // Refresh todos list
+      const result = await response.json();
+      setAiResponse(result.response || 'No response received');
+
+      // Refresh todos after potential creation
       await fetchTodos();
       setInputText('');
     } catch (error) {
-      console.error('Error processing input:', error);
+      console.error('Error processing request:', error);
+      setAiResponse('Error processing your request. Please try again.');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const toggleTodo = async (id, completed) => {
     try {
-      const todo = todos.find(t => t.id === id);
       await fetch(`/api/todos/${id}`, {
-        method: 'PUT',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          description: todo.description,
-          completed: !completed
-        }),
+        body: JSON.stringify({ completed: !completed }),
       });
       await fetchTodos();
     } catch (error) {
-      console.error('Error updating todo:', error);
+      console.error('Error toggling todo:', error);
     }
   };
 
@@ -79,145 +79,98 @@ function TodoApp() {
   };
 
   return (
-    <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
-      <h1>Bakery Todo App</h1>
-      
-      {/* Input form */}
-      <form onSubmit={handleSubmit} style={{ marginBottom: '30px' }}>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <input
-            type="text"
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            placeholder="Enter tasks or describe what you need to do..."
-            style={{
-              flex: 1,
-              padding: '12px',
-              fontSize: '16px',
-              border: '2px solid #61dafb',
-              borderRadius: '8px',
-              outline: 'none'
-            }}
-            disabled={loading}
-          />
-          <button
-            type="submit"
-            disabled={loading || !inputText.trim()}
-            style={{
-              padding: '12px 24px',
-              fontSize: '16px',
-              backgroundColor: '#61dafb',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              opacity: loading ? 0.6 : 1
-            }}
-          >
-            {loading ? 'Processing...' : 'Add Tasks'}
-          </button>
-        </div>
-      </form>
+    <div className="todo-app">
+      <header className="todo-header">
+        <h1>Todo App</h1>
+        <p>AI-powered task management with intelligent text parsing</p>
+      </header>
 
-      {/* AI Response */}
-      {aiResponse && (
-        <div style={{
-          backgroundColor: '#f0f8ff',
-          border: '1px solid #61dafb',
-          borderRadius: '8px',
-          padding: '15px',
-          marginBottom: '20px'
-        }}>
-          <h3>AI Response:</h3>
-          <p style={{ margin: 0, fontFamily: 'monospace', fontSize: '14px' }}>
-            {aiResponse}
-          </p>
-        </div>
-      )}
-
-      {/* Todo list */}
-      <div>
-        <h2>Todo Items ({todos.length})</h2>
-        {todos.length === 0 ? (
-          <p style={{ color: '#666', fontStyle: 'italic' }}>
-            No todos yet. Add some tasks above!
-          </p>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {todos.map((todo) => (
-              <div
-                key={todo.id}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  padding: '15px',
-                  backgroundColor: todo.completed ? '#f0f8f0' : '#ffffff',
-                  border: '1px solid #ddd',
-                  borderRadius: '8px',
-                  gap: '15px'
-                }}
-              >
-                <span style={{
-                  backgroundColor: '#61dafb',
-                  color: 'white',
-                  borderRadius: '50%',
-                  width: '30px',
-                  height: '30px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '14px',
-                  fontWeight: 'bold'
-                }}>
-                  {todo.item_number}
-                </span>
-                
-                <span style={{
-                  flex: 1,
-                  textDecoration: todo.completed ? 'line-through' : 'none',
-                  color: todo.completed ? '#666' : '#000'
-                }}>
-                  {todo.description}
-                </span>
-                
+      <main className="todo-main">
+        <div className="cards-container">
+          
+          {/* Text Input Card */}
+          <div className="card input-card">
+            <div className="card-header">
+              <h2 className="card-title">📝 Add Tasks</h2>
+            </div>
+            <div className="card-body">
+              <form onSubmit={handleSubmit}>
+                <textarea
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
+                  placeholder="Type what you need to do... I'll help organize it into tasks!"
+                  disabled={loading}
+                  className="text-input"
+                  rows="4"
+                />
                 <button
-                  onClick={() => toggleTodo(todo.id, todo.completed)}
-                  style={{
-                    padding: '6px 12px',
-                    fontSize: '14px',
-                    backgroundColor: todo.completed ? '#ffa500' : '#28a745',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer'
-                  }}
+                  type="submit"
+                  disabled={loading || !inputText.trim()}
+                  className="submit-btn"
                 >
-                  {todo.completed ? 'Undo' : 'Done'}
+                  {loading ? 'Processing...' : 'Add Tasks'}
                 </button>
-                
-                <button
-                  onClick={() => deleteTodo(todo.id)}
-                  style={{
-                    padding: '6px 12px',
-                    fontSize: '14px',
-                    backgroundColor: '#dc3545',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Delete
-                </button>
-              </div>
-            ))}
+              </form>
+            </div>
           </div>
-        )}
-      </div>
 
-      <div style={{ marginTop: '40px', textAlign: 'center' }}>
-        <a href="/" style={{ color: '#61dafb' }}>← Back to Auth</a>
-      </div>
+          {/* AI Response Card */}
+          {aiResponse && (
+            <div className="card response-card">
+              <div className="card-header">
+                <h2 className="card-title">🤖 AI Response</h2>
+              </div>
+              <div className="card-body">
+                <div className="ai-response">{aiResponse}</div>
+              </div>
+            </div>
+          )}
+
+          {/* Todo List Card */}
+          <div className="card todos-card">
+            <div className="card-header">
+              <h2 className="card-title">✅ Tasks ({todos.length})</h2>
+            </div>
+            <div className="card-body">
+              {todos.length === 0 ? (
+                <div className="empty-state">
+                  No tasks yet. Add some using the text input above!
+                </div>
+              ) : (
+                <div className="todo-list">
+                  {todos.map((todo) => (
+                    <div key={todo.id} className={`todo-item ${todo.completed ? 'completed' : ''}`}>
+                      <div className="todo-number">{todo.item_number}</div>
+                      <div className="todo-content">
+                        <span className="todo-text">{todo.description}</span>
+                      </div>
+                      <div className="todo-actions">
+                        <button
+                          onClick={() => toggleTodo(todo.id, todo.completed)}
+                          className={`action-btn ${todo.completed ? 'undo-btn' : 'done-btn'}`}
+                        >
+                          {todo.completed ? 'Undo' : 'Done'}
+                        </button>
+                        <button
+                          onClick={() => deleteTodo(todo.id)}
+                          className="action-btn delete-btn"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+        </div>
+
+        <div className="back-link">
+          <a href="/">← Back to Auth</a>
+        </div>
+      </main>
     </div>
   );
 }
