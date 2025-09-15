@@ -79,9 +79,8 @@ function TodoApp() {
   };
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>Bakery Todo App</h1>
+    <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
+      <h1>Bakery Todo App</h1>
       
       {/* Input form */}
       <form onSubmit={handleSubmit} style={{ marginBottom: '30px' }}>
@@ -216,10 +215,9 @@ function TodoApp() {
         )}
       </div>
 
-        <div style={{ marginTop: '40px', textAlign: 'center' }}>
-          <a href="/" style={{ color: '#61dafb' }}>← Back to Auth</a>
-        </div>
-      </header>
+      <div style={{ marginTop: '40px', textAlign: 'center' }}>
+        <a href="/" style={{ color: '#61dafb' }}>← Back to Auth</a>
+      </div>
     </div>
   );
 }
