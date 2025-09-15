@@ -12,10 +12,15 @@ function TodoApp() {
   const fetchTodos = async () => {
     try {
       const response = await fetch('/api/todos');
+      if (!response.ok) {
+        console.error('API error:', response.status);
+        return;
+      }
       const data = await response.json();
-      setTodos(data);
+      setTodos(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error:', error);
+      setTodos([]);
     }
   };
 
@@ -64,11 +69,7 @@ function TodoApp() {
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-center mb-8">AI Todo App</h1>
-        
-        {/* AI Input */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">Tell me what you need to do</h2>
           <form onSubmit={handleAISubmit} className="flex gap-3">
             <input
               type="text"
@@ -88,9 +89,7 @@ function TodoApp() {
           </form>
         </div>
 
-        {/* Todo List */}
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4">Your Tasks</h2>
           {todos.length === 0 ? (
             <p className="text-gray-500 text-center py-8">No tasks yet. Add one above!</p>
           ) : (
