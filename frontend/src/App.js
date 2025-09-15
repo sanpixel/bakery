@@ -13,18 +13,12 @@ function App() {
         <header className="App-header">
           {DEBUG && (
             <div style={{fontSize: '12px', textAlign: 'left', margin: '20px', border: '1px solid #61dafb', padding: '10px'}}>
-              <h3>Environment Debug</h3>
-              <p>REACT_APP_SUPABASE_URL: {process.env.REACT_APP_SUPABASE_URL || 'NOT SET'}</p>
-              <p>REACT_APP_SUPABASE_ANON_KEY: {process.env.REACT_APP_SUPABASE_ANON_KEY || 'NOT SET'}</p>
-              <p>REACT_APP_SITE_URL: {process.env.REACT_APP_SITE_URL || 'NOT SET'}</p>
-              <p>
-                <a href="/api/debug/env" target="_blank" style={{color: '#61dafb'}}>
-                  Check .env file content
-                </a>
-              </p>
+              <h3>Configuration Debug</h3>
+              <p><strong>Runtime Config Approach:</strong> Supabase configuration loaded from backend</p>
+              <p>Config source: <code>/api/config</code> endpoint</p>
               <p>
                 <a href="/api/config" target="_blank" style={{color: '#61dafb'}}>
-                  Check runtime config
+                  View runtime configuration →
                 </a>
               </p>
             </div>

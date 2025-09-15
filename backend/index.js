@@ -27,6 +27,57 @@ app.get('/api/config', (req, res) => {
   });
 });
 
+// File browser endpoint for container debugging
+app.get('/files', (req, res) => {
+  const fs = require('fs');
+  const path = require('path');
+  
+  const listFiles = (dir, prefix = '') => {
+    try {
+      const items = fs.readdirSync(dir);
+      let html = '';
+      
+      items.forEach(item => {
+        const fullPath = path.join(dir, item);
+        const relativePath = path.join(prefix, item);
+        
+        try {
+          const stats = fs.statSync(fullPath);
+          if (stats.isDirectory()) {
+            html += `<div style="margin: 5px 0; padding: 5px; background: #f0f0f0;">📁 ${item}/</div>`;
+          } else {
+            const size = (stats.size / 1024).toFixed(1);
+            html += `<div style="margin: 2px 0;">📄 ${item} (${size}kb)</div>`;
+          }
+        } catch (e) {
+          html += `<div style="margin: 2px 0; color: red;">❌ ${item} (access denied)</div>`;
+        }
+      });
+      
+      return html;
+    } catch (e) {
+      return `<div style="color: red;">Error reading directory: ${e.message}</div>`;
+    }
+  };
+  
+  const html = `
+    <html>
+      <head><title>Container Files</title></head>
+      <body style="font-family: monospace; padding: 20px;">
+        <h2>Container File Browser</h2>
+        <h3>Root Directory (/)</h3>
+        ${listFiles('/')}
+        <h3>App Directory (/app)</h3>
+        ${listFiles('/app')}
+        <h3>Environment Variables</h3>
+        <pre>${JSON.stringify(process.env, null, 2)}</pre>
+      </body>
+    </html>
+  `;
+  
+  res.send(html);
+});
+
 // Catch-all handler: send back React's index.html file for any non-API routes
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
