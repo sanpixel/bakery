@@ -1,0 +1,1 @@
+Summarize the user input like Shakespeare. Return a single line so that can be added to the todo list.

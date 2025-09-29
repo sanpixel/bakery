@@ -1,12 +1,16 @@
 import { useState, useEffect } from 'react';
 import { getSupabase, initializeSupabase } from '../supabaseClient';
 import logo from '../logo.svg';
+import TodoCard from './TodoCard';
+import AICard from './AICard';
 
 export default function Auth() {
   const [session, setSession] = useState(null);
   const [supabase, setSupabase] = useState(null);
   const [loading, setLoading] = useState(true);
   const [config, setConfig] = useState(null);
+  const [refreshTodos, setRefreshTodos] = useState(0);
+  const handleTodoAdded = () => setRefreshTodos(prev => prev + 1);
 
   useEffect(() => {
     const setupAuth = async () => {
@@ -135,6 +139,11 @@ export default function Auth() {
             Sign Out
           </button>
         </div>
+        <div style={{margin: '20px 0'}} />
+        <div style={{display: 'flex', gap: '20px', flexWrap: 'wrap'}}>
+          <TodoCard key={refreshTodos} />
+          <AICard onTodoAdded={handleTodoAdded} />
+        </div>
       </>
     );
   }
@@ -172,6 +181,11 @@ export default function Auth() {
         Sign in with Google
       </button>
       {!config && <p style={{color: 'red', fontSize: '12px'}}>Config not loaded</p>}
+      <div style={{margin: '20px 0'}} />
+      <div style={{display: 'flex', gap: '20px', flexWrap: 'wrap'}}>
+        <TodoCard key={refreshTodos} />
+        <AICard onTodoAdded={handleTodoAdded} />
+      </div>
       <p>
         <a
           className="App-link"
