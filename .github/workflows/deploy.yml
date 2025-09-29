@@ -23,6 +23,10 @@ jobs:
       uses: google-github-actions/setup-gcloud@v2
     
     - name: Deploy to Cloud Run
+      env:
+        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        SITE_URL: ${{ secrets.SITE_URL }}
       run: |
         gcloud run deploy bakery \
           --source . \
@@ -30,4 +34,5 @@ jobs:
           --allow-unauthenticated \
           --memory 1Gi \
           --cpu 1 \
-          --max-instances 10
+          --max-instances 10 \
+          --set-env-vars="SUPABASE_URL=${{ secrets.SUPABASE_URL }},SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }},SITE_URL=${{ secrets.SITE_URL }}"
