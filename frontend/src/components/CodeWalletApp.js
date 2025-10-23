@@ -8,7 +8,8 @@ import {
   Divider,
   Group,
   Badge,
-  Button
+  Button,
+  Stack
 } from '@mantine/core';
 import { getSupabase } from '../supabaseClient';
 import DiscountCodeManager from './DiscountCodeManager';
