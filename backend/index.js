@@ -33,6 +33,12 @@ try {
 }
 const TODO_TABLE = `${APP_NAME}_todo_items`;
 
+// CodeWallet table names
+const DISCOUNT_CODES_TABLE = 'codewallet_discount_codes';
+const HOTEL_SEARCHES_TABLE = 'codewallet_hotel_searches';
+const HOTEL_RATES_TABLE = 'codewallet_hotel_rates';
+const HOTEL_BRANDS_TABLE = 'codewallet_hotel_brands';
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false }
@@ -41,6 +47,7 @@ const pool = new Pool({
 // Initialize database
 async function initDatabase() {
   try {
+    // Original TODO table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS ${TODO_TABLE} (
         id SERIAL PRIMARY KEY,
@@ -50,7 +57,66 @@ async function initDatabase() {
         created TIMESTAMP DEFAULT NOW()
       )
     `);
-    console.log('✅ Database initialized');
+
+    // CodeWallet tables - these should already exist but checking for safety
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS ${DISCOUNT_CODES_TABLE} (
+        id SERIAL PRIMARY KEY,
+        user_id UUID NOT NULL,
+        corporate_name VARCHAR(100),
+        code_value VARCHAR(50) NOT NULL,
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS ${HOTEL_SEARCHES_TABLE} (
+        id SERIAL PRIMARY KEY,
+        user_id UUID NOT NULL,
+        search_location VARCHAR(200),
+        check_in_date DATE,
+        check_out_date DATE,
+        guest_count INTEGER DEFAULT 1,
+        codes_used TEXT,
+        created_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS ${HOTEL_RATES_TABLE} (
+        id SERIAL PRIMARY KEY,
+        search_id INTEGER REFERENCES ${HOTEL_SEARCHES_TABLE}(id),
+        hotel_name VARCHAR(200),
+        brand VARCHAR(100),
+        parent_company VARCHAR(50),
+        original_rate DECIMAL(10,2),
+        discounted_rate DECIMAL(10,2),
+        discount_code VARCHAR(50),
+        savings_amount DECIMAL(10,2),
+        savings_percentage DECIMAL(5,2),
+        booking_url TEXT,
+        hotel_address TEXT,
+        amenities TEXT,
+        rating DECIMAL(3,2),
+        review_count INTEGER,
+        created_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS ${HOTEL_BRANDS_TABLE} (
+        id SERIAL PRIMARY KEY,
+        parent_company VARCHAR(50) CHECK (parent_company IN ('hilton', 'marriott')),
+        brand_name VARCHAR(100),
+        brand_code VARCHAR(20),
+        booking_url_template TEXT,
+        is_active BOOLEAN DEFAULT true
+      )
+    `);
+
+    console.log('✅ Database initialized (TODO + CodeWallet tables)');
   } catch (error) {
     console.error('❌ Database error:', error);
   }
