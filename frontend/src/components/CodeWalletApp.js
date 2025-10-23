@@ -11,6 +11,7 @@ import {
   Button
 } from '@mantine/core';
 import { getSupabase } from '../supabaseClient';
+import DiscountCodeManager from './DiscountCodeManager';
 
 /**
  * Main CodeWallet Application
@@ -163,21 +164,7 @@ function CodeWalletApp() {
               Your Discount Codes
             </Title>
             
-            {/* Discount Code Manager will go here */}
-            <div style={{ 
-              minHeight: '250px', 
-              backgroundColor: '#f8f9fa', 
-              border: '1px dashed #dee2e6',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: '4px'
-            }}>
-              <Text c="dimmed" ta="center" size="sm">
-                Discount Code Manager<br />
-                <small>(Coming in next task)</small>
-              </Text>
-            </div>
+            <DiscountCodeManager />
           </Paper>
 
           {/* Search History Section */}
