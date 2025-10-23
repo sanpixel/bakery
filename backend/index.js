@@ -5,6 +5,10 @@ const fs = require('fs');
 const { Pool } = require('pg');
 const OpenAI = require('openai');
 const discountCodeService = require('./services/discountCodeService');
+const hotelSearchService = require('./services/hotelSearchService');
+const aiAssistantService = require('./services/aiAssistantService');
+const HiltonAdapter = require('./adapters/hiltonAdapter');
+const MarriottAdapter = require('./adapters/marriottAdapter');
 require('dotenv').config();
 
 const app = express();
@@ -123,6 +127,11 @@ async function initDatabase() {
   }
 }
 initDatabase();
+
+// Initialize hotel search adapters
+hotelSearchService.registerAdapter('hilton', new HiltonAdapter());
+hotelSearchService.registerAdapter('marriott', new MarriottAdapter());
+console.log('✅ Hotel search adapters initialized');
 
 app.use(cors());
 app.use(express.json());
@@ -283,6 +292,114 @@ app.patch('/api/discount-codes/:id', async (req, res) => {
     res.json(updatedCode);
   } catch (error) {
     console.error('Error updating discount code:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// CodeWallet - Hotel Search API endpoints
+
+// Perform hotel search
+app.post('/api/hotel-search', async (req, res) => {
+  try {
+    const userId = req.query.user_id || 'default-user';
+    const searchParams = req.body;
+    
+    console.log('🔍 Hotel search request:', searchParams);
+    
+    const searchResults = await hotelSearchService.searchHotels(searchParams, userId);
+    
+    res.json(searchResults);
+  } catch (error) {
+    console.error('Error in hotel search:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Natural language hotel search
+app.post('/api/natural-search', async (req, res) => {
+  try {
+    const { query } = req.body;
+    const userId = req.query.user_id || 'default-user';
+    
+    if (!query) {
+      return res.status(400).json({ error: 'Query is required' });
+    }
+    
+    console.log('🤖 Natural language search:', query);
+    
+    const searchParams = { naturalLanguageQuery: query };
+    const searchResults = await hotelSearchService.searchHotels(searchParams, userId);
+    
+    res.json(searchResults);
+  } catch (error) {
+    console.error('Error in natural language search:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get search results by ID
+app.get('/api/hotel-search/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const results = await hotelSearchService.getSearchResults(id);
+    
+    if (results.length === 0) {
+      return res.status(404).json({ error: 'Search results not found' });
+    }
+    
+    res.json(results);
+  } catch (error) {
+    console.error('Error fetching search results:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get user's search history
+app.get('/api/search-history', async (req, res) => {
+  try {
+    const userId = req.query.user_id || 'default-user';
+    const limit = parseInt(req.query.limit) || 10;
+    
+    const history = await hotelSearchService.getSearchHistory(userId, limit);
+    
+    res.json(history);
+  } catch (error) {
+    console.error('Error fetching search history:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// AI assistant endpoints
+
+// Parse natural language query
+app.post('/api/ai/parse-search', async (req, res) => {
+  try {
+    const { query } = req.body;
+    
+    if (!query) {
+      return res.status(400).json({ error: 'Query is required' });
+    }
+    
+    const parsed = await aiAssistantService.parseNaturalLanguageSearch(query);
+    
+    res.json(parsed);
+  } catch (error) {
+    console.error('Error parsing search query:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Generate search suggestions
+app.post('/api/ai/suggestions', async (req, res) => {
+  try {
+    const { location, dates } = req.body;
+    
+    const suggestions = await aiAssistantService.generateSearchSuggestions(location || '', dates || '');
+    
+    res.json(suggestions);
+  } catch (error) {
+    console.error('Error generating suggestions:', error);
     res.status(500).json({ error: error.message });
   }
 });
