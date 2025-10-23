@@ -12,6 +12,7 @@ import {
 } from '@mantine/core';
 import { getSupabase } from '../supabaseClient';
 import DiscountCodeManager from './DiscountCodeManager';
+import HotelSearchForm from './HotelSearchForm';
 
 /**
  * Main CodeWallet Application
@@ -20,6 +21,7 @@ import DiscountCodeManager from './DiscountCodeManager';
 function CodeWalletApp() {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [searchResults, setSearchResults] = useState(null);
 
   useEffect(() => {
     const setupAuth = async () => {
@@ -116,21 +118,7 @@ function CodeWalletApp() {
               Find the best hotel rates using your corporate discount codes
             </Text>
             
-            {/* Hotel Search Form will go here */}
-            <div style={{ 
-              minHeight: '300px', 
-              backgroundColor: '#f8f9fa', 
-              border: '1px dashed #dee2e6',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: '4px'
-            }}>
-              <Text c="dimmed" ta="center">
-                Hotel Search Form<br />
-                <small>(Coming in next task)</small>
-              </Text>
-            </div>
+            <HotelSearchForm onSearchResults={setSearchResults} />
           </Paper>
 
           <Paper p="lg" withBorder>
@@ -138,21 +126,69 @@ function CodeWalletApp() {
               Rate Comparison Results
             </Title>
             
-            {/* Rate Comparison Results will go here */}
-            <div style={{ 
-              minHeight: '400px', 
-              backgroundColor: '#f8f9fa', 
-              border: '1px dashed #dee2e6',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: '4px'
-            }}>
-              <Text c="dimmed" ta="center">
-                Rate Comparison Display<br />
-                <small>(Coming in next task)</small>
-              </Text>
-            </div>
+            {/* Rate Comparison Results */}
+            {searchResults ? (
+              <div>
+                <Text size="lg" fw={600} mb="md">
+                  Search Results ({searchResults.totalResults} hotels found)
+                </Text>
+                
+                {/* AI Summary */}
+                {searchResults.aiSummary && (
+                  <Paper p="md" mb="md" style={{ backgroundColor: '#e3f2fd' }}>
+                    <Text size="sm" fw={500} mb="xs">🤖 AI Summary:</Text>
+                    <Text size="sm">{searchResults.aiSummary.summary}</Text>
+                    {searchResults.aiSummary.bestDeal && (
+                      <Text size="sm" mt="xs">
+                        <strong>Best Deal:</strong> {searchResults.aiSummary.bestDeal}
+                      </Text>
+                    )}
+                  </Paper>
+                )}
+                
+                {/* Results Preview */}
+                <div style={{ 
+                  maxHeight: '300px', 
+                  overflowY: 'auto',
+                  border: '1px solid #dee2e6',
+                  borderRadius: '4px',
+                  padding: '1rem'
+                }}>
+                  {searchResults.results.slice(0, 5).map((result, index) => (
+                    <div key={index} style={{ 
+                      padding: '0.5rem 0', 
+                      borderBottom: index < 4 ? '1px solid #eee' : 'none' 
+                    }}>
+                      <Text size="sm" fw={500}>{result.hotel_name}</Text>
+                      <Text size="xs" c="dimmed">
+                        {result.brand} • ${result.discounted_rate || result.original_rate}
+                        {result.discount_code && ` • Code: ${result.discount_code}`}
+                      </Text>
+                    </div>
+                  ))}
+                  {searchResults.results.length > 5 && (
+                    <Text size="xs" c="dimmed" ta="center" mt="sm">
+                      ... and {searchResults.results.length - 5} more results
+                    </Text>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div style={{ 
+                minHeight: '400px', 
+                backgroundColor: '#f8f9fa', 
+                border: '1px dashed #dee2e6',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '4px'
+              }}>
+                <Text c="dimmed" ta="center">
+                  Search results will appear here<br />
+                  <small>Use the search form above to find hotels</small>
+                </Text>
+              </div>
+            )}
           </Paper>
         </Grid.Col>
 
