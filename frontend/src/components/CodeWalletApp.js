@@ -24,7 +24,7 @@ function CodeWalletApp() {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [searchResults, setSearchResults] = useState(null);
-  const [searchFormRef, setSearchFormRef] = useState(null);
+
 
   useEffect(() => {
     const setupAuth = async () => {
@@ -121,10 +121,7 @@ function CodeWalletApp() {
               Find the best hotel rates using your corporate discount codes
             </Text>
             
-            <HotelSearchForm 
-              ref={setSearchFormRef}
-              onSearchResults={setSearchResults} 
-            />
+            <HotelSearchForm onSearchResults={setSearchResults} />
           </Paper>
 
           <Paper p="lg" withBorder>
