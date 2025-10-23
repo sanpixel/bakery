@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const { Pool } = require('pg');
 const OpenAI = require('openai');
+const discountCodeService = require('./services/discountCodeService');
 require('dotenv').config();
 
 const app = express();
@@ -215,6 +216,73 @@ app.delete('/api/todos/:id', async (req, res) => {
     await pool.query(`DELETE FROM ${TODO_TABLE} WHERE id = $1`, [id]);
     res.json({ success: true });
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// CodeWallet - Discount Code Management API endpoints
+
+// Get user's discount codes
+app.get('/api/discount-codes', async (req, res) => {
+  try {
+    const userId = req.query.user_id || 'default-user';
+    const codes = await discountCodeService.getUserCodes(userId);
+    res.json(codes);
+  } catch (error) {
+    console.error('Error fetching discount codes:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Add new discount code
+app.post('/api/discount-codes', async (req, res) => {
+  try {
+    const { corporate_name, code_value, notes } = req.body;
+    const userId = req.query.user_id || 'default-user';
+    
+    const newCode = await discountCodeService.saveUserCode(userId, corporate_name, code_value, notes);
+    res.json(newCode);
+  } catch (error) {
+    console.error('Error adding discount code:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Delete discount code
+app.delete('/api/discount-codes/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.query.user_id || 'default-user';
+    
+    const deletedCode = await discountCodeService.deleteUserCode(userId, id);
+    
+    if (!deletedCode) {
+      return res.status(404).json({ error: 'Discount code not found' });
+    }
+    
+    res.json({ success: true, deleted: deletedCode });
+  } catch (error) {
+    console.error('Error deleting discount code:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update discount code notes
+app.patch('/api/discount-codes/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { notes } = req.body;
+    const userId = req.query.user_id || 'default-user';
+    
+    const updatedCode = await discountCodeService.updateCodeNotes(userId, id, notes);
+    
+    if (!updatedCode) {
+      return res.status(404).json({ error: 'Discount code not found' });
+    }
+    
+    res.json(updatedCode);
+  } catch (error) {
+    console.error('Error updating discount code:', error);
     res.status(500).json({ error: error.message });
   }
 });
