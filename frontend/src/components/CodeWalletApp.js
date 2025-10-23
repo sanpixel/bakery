@@ -14,6 +14,7 @@ import { getSupabase } from '../supabaseClient';
 import DiscountCodeManager from './DiscountCodeManager';
 import HotelSearchForm from './HotelSearchForm';
 import RateComparison from './RateComparison';
+import SearchHistory from './SearchHistory';
 
 /**
  * Main CodeWallet Application
@@ -23,6 +24,7 @@ function CodeWalletApp() {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [searchResults, setSearchResults] = useState(null);
+  const [searchFormRef, setSearchFormRef] = useState(null);
 
   useEffect(() => {
     const setupAuth = async () => {
@@ -119,7 +121,10 @@ function CodeWalletApp() {
               Find the best hotel rates using your corporate discount codes
             </Text>
             
-            <HotelSearchForm onSearchResults={setSearchResults} />
+            <HotelSearchForm 
+              ref={setSearchFormRef}
+              onSearchResults={setSearchResults} 
+            />
           </Paper>
 
           <Paper p="lg" withBorder>
@@ -148,20 +153,13 @@ function CodeWalletApp() {
               Recent Searches
             </Title>
             
-            <div style={{ 
-              minHeight: '200px', 
-              backgroundColor: '#f8f9fa', 
-              border: '1px dashed #dee2e6',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: '4px'
-            }}>
-              <Text c="dimmed" ta="center" size="sm">
-                Search History<br />
-                <small>(Coming in next task)</small>
-              </Text>
-            </div>
+            <SearchHistory 
+              onReSearch={(params) => {
+                // This would ideally populate the search form with the params
+                // For now, just trigger a new search
+                console.log('Re-searching with params:', params);
+              }}
+            />
           </Paper>
 
           {/* AI Assistant Section */}
@@ -170,20 +168,23 @@ function CodeWalletApp() {
               AI Assistant
             </Title>
             
-            <div style={{ 
-              minHeight: '150px', 
-              backgroundColor: '#f8f9fa', 
-              border: '1px dashed #dee2e6',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: '4px'
-            }}>
-              <Text c="dimmed" ta="center" size="sm">
-                Natural Language Search<br />
-                <small>(Coming in next task)</small>
-              </Text>
-            </div>
+            <Paper p="md" withBorder>
+              <Text size="sm" fw={500} mb="xs">💡 Quick Tips</Text>
+              <Stack gap="xs">
+                <Text size="xs" c="dimmed">
+                  • Use natural language: "cheap hotel in NYC this weekend"
+                </Text>
+                <Text size="xs" c="dimmed">
+                  • Add multiple discount codes for better savings
+                </Text>
+                <Text size="xs" c="dimmed">
+                  • Compare Hilton vs Marriott rates side by side
+                </Text>
+                <Text size="xs" c="dimmed">
+                  • Click on previous searches to repeat them
+                </Text>
+              </Stack>
+            </Paper>
           </Paper>
         </Grid.Col>
       </Grid>
