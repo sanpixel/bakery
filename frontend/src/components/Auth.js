@@ -140,6 +140,27 @@ export default function Auth() {
           </button>
         </div>
         <div style={{margin: '20px 0'}} />
+        
+        {/* CodeWallet Link */}
+        <div style={{margin: '20px 0'}}>
+          <a 
+            href="/codewallet" 
+            style={{
+              display: 'inline-block',
+              backgroundColor: '#4285f4',
+              color: 'white',
+              padding: '12px 24px',
+              borderRadius: '6px',
+              textDecoration: 'none',
+              fontWeight: '500',
+              fontSize: '16px',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            }}
+          >
+            🏨 Open CodeWallet Hotel Rate Finder
+          </a>
+        </div>
+        
         <div style={{display: 'flex', gap: '20px', flexWrap: 'wrap'}}>
           <TodoCard key={refreshTodos} />
           <AICard onTodoAdded={handleTodoAdded} />
