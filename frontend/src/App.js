@@ -60,9 +60,10 @@ function App() {
               </div>
             )}
             <Routes>
-              <Route path="/" element={<Auth />} />
+              <Route path="/" element={<CodeWalletApp />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="/codewallet" element={<CodeWalletApp />} />
+              <Route path="/todos" element={<Auth />} />
             </Routes>
             <div style={{fontSize: '10px', textAlign: 'center', margin: '20px'}}>
               <a href="/files" target="_blank" style={{color: '#61dafb', textDecoration: 'none'}}>
