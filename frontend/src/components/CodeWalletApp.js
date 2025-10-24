@@ -11,7 +11,7 @@ import {
   Button,
   Stack
 } from '@mantine/core';
-import { getSupabase } from '../supabaseClient';
+import { getSupabase, initializeSupabase } from '../supabaseClient';
 import DiscountCodeManager from './DiscountCodeManager';
 import HotelSearchForm from './HotelSearchForm';
 import RateComparison from './RateComparison';
@@ -27,19 +27,24 @@ function CodeWalletApp() {
   const [searchResults, setSearchResults] = useState(null);
 
 
+  const [supabase, setSupabase] = useState(null);
+  const [config, setConfig] = useState(null);
+
   useEffect(() => {
     const setupAuth = async () => {
       try {
-        const supabase = await getSupabase();
+        const { supabase: client, config: cfg } = await initializeSupabase();
+        setSupabase(client);
+        setConfig(cfg);
         
         // Get initial session
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await client.auth.getSession();
         setSession(session);
         
         // Listen for auth changes
         const {
           data: { subscription },
-        } = supabase.auth.onAuthStateChange((_event, session) => {
+        } = client.auth.onAuthStateChange((_event, session) => {
           setSession(session);
         });
         
@@ -55,6 +60,24 @@ function CodeWalletApp() {
     setupAuth();
   }, []);
 
+  const signInWithGoogle = async () => {
+    if (!supabase) return;
+    const siteUrl = config?.deployUrl || config?.siteUrl || window.location.origin;
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${siteUrl}/auth/callback`
+      }
+    });
+    if (error) console.error('Error:', error);
+  };
+
+  const signOut = async () => {
+    if (!supabase) return;
+    const { error } = await supabase.auth.signOut();
+    if (error) console.error('Error:', error);
+  };
+
   if (loading) {
     return (
       <Container size="xl" py="xl">
@@ -63,23 +86,7 @@ function CodeWalletApp() {
     );
   }
 
-  if (!session) {
-    return (
-      <Container size="xl" py="xl">
-        <Paper p="xl" withBorder>
-          <Title order={1} ta="center" mb="md">CodeWallet</Title>
-          <Text ta="center" size="lg" c="dimmed">
-            Please sign in to access your hotel discount codes and rate comparison tools.
-          </Text>
-          <Group justify="center" mt="xl">
-            <Button component="a" href="/" size="lg">
-              Sign In
-            </Button>
-          </Group>
-        </Paper>
-      </Container>
-    );
-  }
+  const userEmail = session?.user?.email;
 
   return (
     <Container size="xl" py="md">
@@ -103,9 +110,20 @@ function CodeWalletApp() {
                 day: 'numeric' 
               })}
             </Text>
-            <Badge variant="light" size="sm" mt="xs">
-              {session.user.email}
-            </Badge>
+            {session ? (
+              <Group gap="xs">
+                <Badge variant="light" size="sm">
+                  {userEmail}
+                </Badge>
+                <Button size="xs" variant="subtle" onClick={signOut}>
+                  Sign Out
+                </Button>
+              </Group>
+            ) : (
+              <Button size="sm" onClick={signInWithGoogle}>
+                Sign In with Google
+              </Button>
+            )}
           </div>
         </Group>
       </Paper>
