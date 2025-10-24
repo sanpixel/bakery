@@ -39,7 +39,7 @@ function App() {
   const DEBUG = false; // Set to false to hide debug info
   
   return (
-    <MantineProvider theme={theme}>
+    <MantineProvider theme={theme} forceColorScheme="light">
       <Router>
         <div className="App">
           <header className="App-header">
