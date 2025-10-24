@@ -33,7 +33,7 @@ function SearchHistory({ onReSearch }) {
       setLoading(true);
       setError(null);
       
-      const response = await fetch('/api/search-history?user_id=default-user&limit=5');
+      const response = await fetch('/api/search-history?user_id=00000000-0000-0000-0000-000000000000&limit=5');
       
       if (!response.ok) {
         throw new Error('Failed to load search history');

@@ -52,7 +52,7 @@ function DiscountCodeManager() {
       setLoading(true);
       setError(null);
       
-      const response = await fetch('/api/discount-codes?user_id=default-user');
+      const response = await fetch('/api/discount-codes?user_id=00000000-0000-0000-0000-000000000000');
       
       if (!response.ok) {
         throw new Error('Failed to load discount codes');
@@ -76,8 +76,8 @@ function DiscountCodeManager() {
       setError(null);
       
       const url = editingCode 
-        ? `/api/discount-codes/${editingCode.id}?user_id=default-user`
-        : '/api/discount-codes?user_id=default-user';
+        ? `/api/discount-codes/${editingCode.id}?user_id=00000000-0000-0000-0000-000000000000`
+        : '/api/discount-codes?user_id=00000000-0000-0000-0000-000000000000';
       
       const method = editingCode ? 'PATCH' : 'POST';
       
@@ -114,7 +114,7 @@ function DiscountCodeManager() {
     try {
       setError(null);
       
-      const response = await fetch(`/api/discount-codes/${codeId}?user_id=default-user`, {
+      const response = await fetch(`/api/discount-codes/${codeId}?user_id=00000000-0000-0000-0000-000000000000`, {
         method: 'DELETE',
       });
 

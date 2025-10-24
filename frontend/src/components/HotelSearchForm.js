@@ -64,7 +64,7 @@ function HotelSearchForm({ onSearchResults }) {
    */
   const loadDiscountCodes = async () => {
     try {
-      const response = await fetch('/api/discount-codes?user_id=default-user');
+      const response = await fetch('/api/discount-codes?user_id=00000000-0000-0000-0000-000000000000');
       if (response.ok) {
         const codes = await response.json();
         setDiscountCodes(codes.map(code => ({
@@ -94,7 +94,7 @@ function HotelSearchForm({ onSearchResults }) {
         discountCodes: values.selectedCodes
       };
 
-      const response = await fetch('/api/hotel-search?user_id=default-user', {
+      const response = await fetch('/api/hotel-search?user_id=00000000-0000-0000-0000-000000000000', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -129,7 +129,7 @@ function HotelSearchForm({ onSearchResults }) {
       setLoading(true);
       setError(null);
 
-      const response = await fetch('/api/natural-search?user_id=default-user', {
+      const response = await fetch('/api/natural-search?user_id=00000000-0000-0000-0000-000000000000', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

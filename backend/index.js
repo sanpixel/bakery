@@ -234,7 +234,7 @@ app.delete('/api/todos/:id', async (req, res) => {
 // Get user's discount codes
 app.get('/api/discount-codes', async (req, res) => {
   try {
-    const userId = req.query.user_id || 'default-user';
+    const userId = req.query.user_id || '00000000-0000-0000-0000-000000000000';
     const codes = await discountCodeService.getUserCodes(userId);
     res.json(codes);
   } catch (error) {
@@ -247,7 +247,7 @@ app.get('/api/discount-codes', async (req, res) => {
 app.post('/api/discount-codes', async (req, res) => {
   try {
     const { corporate_name, code_value, notes } = req.body;
-    const userId = req.query.user_id || 'default-user';
+    const userId = req.query.user_id || '00000000-0000-0000-0000-000000000000';
     
     const newCode = await discountCodeService.saveUserCode(userId, corporate_name, code_value, notes);
     res.json(newCode);
@@ -261,7 +261,7 @@ app.post('/api/discount-codes', async (req, res) => {
 app.delete('/api/discount-codes/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.query.user_id || 'default-user';
+    const userId = req.query.user_id || '00000000-0000-0000-0000-000000000000';
     
     const deletedCode = await discountCodeService.deleteUserCode(userId, id);
     
@@ -281,7 +281,7 @@ app.patch('/api/discount-codes/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { notes } = req.body;
-    const userId = req.query.user_id || 'default-user';
+    const userId = req.query.user_id || '00000000-0000-0000-0000-000000000000';
     
     const updatedCode = await discountCodeService.updateCodeNotes(userId, id, notes);
     
@@ -301,7 +301,7 @@ app.patch('/api/discount-codes/:id', async (req, res) => {
 // Perform hotel search
 app.post('/api/hotel-search', async (req, res) => {
   try {
-    const userId = req.query.user_id || 'default-user';
+    const userId = req.query.user_id || '00000000-0000-0000-0000-000000000000';
     const searchParams = req.body;
     
     console.log('🔍 Hotel search request:', searchParams);
@@ -319,7 +319,7 @@ app.post('/api/hotel-search', async (req, res) => {
 app.post('/api/natural-search', async (req, res) => {
   try {
     const { query } = req.body;
-    const userId = req.query.user_id || 'default-user';
+    const userId = req.query.user_id || '00000000-0000-0000-0000-000000000000';
     
     if (!query) {
       return res.status(400).json({ error: 'Query is required' });
@@ -358,7 +358,7 @@ app.get('/api/hotel-search/:id', async (req, res) => {
 // Get user's search history
 app.get('/api/search-history', async (req, res) => {
   try {
-    const userId = req.query.user_id || 'default-user';
+    const userId = req.query.user_id || '00000000-0000-0000-0000-000000000000';
     const limit = parseInt(req.query.limit) || 10;
     
     const history = await hotelSearchService.getSearchHistory(userId, limit);
@@ -371,6 +371,60 @@ app.get('/api/search-history', async (req, res) => {
 });
 
 // AI assistant endpoints
+
+// Parse bulk discount codes
+app.post('/api/ai/parse-codes', async (req, res) => {
+  try {
+    const { text } = req.body;
+    const userId = req.query.user_id || '00000000-0000-0000-0000-000000000000';
+    
+    if (!text) {
+      return res.status(400).json({ error: 'Text is required' });
+    }
+    
+    // Use AI to parse the bulk text into structured codes
+    const systemPrompt = `Parse this text containing hotel discount codes into a JSON array. Each code should have:
+- corporate_name: string (company name like "GE", "IBM", "Pfizer")
+- code_value: string (the actual code)
+- notes: string (any additional info like brand restrictions)
+
+Return only valid JSON array, no other text.`;
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: text }
+      ],
+      max_tokens: 500,
+      temperature: 0.1
+    });
+
+    const response = completion.choices[0].message.content.trim();
+    const parsedCodes = JSON.parse(response);
+    
+    // Save all codes to database
+    const savedCodes = [];
+    for (const code of parsedCodes) {
+      const saved = await discountCodeService.saveUserCode(
+        userId, 
+        code.corporate_name, 
+        code.code_value, 
+        code.notes
+      );
+      savedCodes.push(saved);
+    }
+    
+    res.json({ 
+      parsed: parsedCodes.length,
+      saved: savedCodes 
+    });
+    
+  } catch (error) {
+    console.error('Error parsing bulk codes:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Parse natural language query
 app.post('/api/ai/parse-search', async (req, res) => {
