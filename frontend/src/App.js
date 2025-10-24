@@ -29,12 +29,14 @@ const theme = createTheme({
       '#000000'
     ]
   },
-  primaryColor: 'newspaper',
+  primaryColor: 'dark',
   defaultRadius: 'sm',
+  white: '#ffffff',
+  black: '#000000',
 });
 
 function App() {
-  const DEBUG = true; // Set to false to hide debug info
+  const DEBUG = false; // Set to false to hide debug info
   
   return (
     <MantineProvider theme={theme}>

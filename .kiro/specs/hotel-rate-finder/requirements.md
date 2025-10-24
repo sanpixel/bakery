@@ -7,7 +7,7 @@ The Hotel Rate Finder feature enables users to efficiently compare hotel rates a
 ## Glossary
 
 - **Hotel_Rate_Finder**: The system component that searches and compares hotel rates
-- **Discount_Code**: A promotional code that provides reduced rates at specific hotel brands
+- **Discount_Code**: A promotional code (corporate, rate, or percentage-based) that provides reduced rates at specific hotel brands, often with varying formats and brand restrictions
 - **Hotel_Brand**: A specific hotel chain (e.g., Hampton Inn, Courtyard, etc.) under parent companies Hilton or Marriott
 - **Rate_Search**: A query for hotel availability and pricing for specific dates and location
 - **Best_Rate**: The lowest available rate found across all searched hotels and discount codes
@@ -22,22 +22,22 @@ The Hotel Rate Finder feature enables users to efficiently compare hotel rates a
 #### Acceptance Criteria
 
 1. WHEN the User enters a city name and travel dates, THE Hotel_Rate_Finder SHALL search for available hotels from both Hilton and Marriott brand properties
-2. WHEN the User provides multiple Discount_Codes, THE Hotel_Rate_Finder SHALL apply each code to compatible Hotel_Brands during the search
+2. WHEN the User provides multiple Discount_Codes, THE Hotel_Rate_Finder SHALL apply each code only to its compatible Hotel_Brands and test all variations for multi-code corporate accounts
 3. WHEN rate searches are completed, THE Hotel_Rate_Finder SHALL display results sorted by lowest price first
 4. WHERE the User has saved Discount_Codes, THE Hotel_Rate_Finder SHALL automatically include them in searches
 5. IF no hotels are found for the specified criteria, THEN THE Hotel_Rate_Finder SHALL display a message indicating no availability
 
 ### Requirement 2
 
-**User Story:** As a user with various discount codes, I want to manage my collection of Hilton and Marriott discount codes, so that I can keep track of which codes work with which hotel brands and their expiration dates.
+**User Story:** As a user with various corporate and promotional discount codes, I want to manage my collection of codes with their specific brand restrictions and formats, so that I can keep track of which codes work with which hotel brands and avoid testing incompatible combinations.
 
 #### Acceptance Criteria
 
-1. THE Hotel_Rate_Finder SHALL allow Users to add new Discount_Codes with brand compatibility information
-2. THE Hotel_Rate_Finder SHALL store Discount_Codes with their applicable Hotel_Brands and expiration dates
-3. WHEN a Discount_Code expires, THE Hotel_Rate_Finder SHALL exclude it from Rate_Searches
-4. THE Hotel_Rate_Finder SHALL allow Users to edit or delete existing Discount_Codes
-5. THE Hotel_Rate_Finder SHALL display all saved Discount_Codes with their current status
+1. THE Hotel_Rate_Finder SHALL allow Users to add Discount_Codes with corporate names, code variations, and specific Hotel_Brand restrictions
+2. THE Hotel_Rate_Finder SHALL store multiple code variations for the same corporate account (e.g., IBM's multiple formats)
+3. THE Hotel_Rate_Finder SHALL track brand-specific restrictions (e.g., Blackstone codes only for Conrad, Waldorf, HGI vs Homewood vs DoubleTree/Hilton)
+4. THE Hotel_Rate_Finder SHALL support both percentage-based codes (e.g., 10% system-wide) and rate codes
+5. THE Hotel_Rate_Finder SHALL allow Users to organize codes by corporate source and edit brand compatibility settings
 
 ### Requirement 3
 
@@ -52,6 +52,18 @@ The Hotel Rate Finder feature enables users to efficiently compare hotel rates a
 5. WHILE displaying results, THE Hotel_Rate_Finder SHALL highlight the Best_Rate option clearly
 
 ### Requirement 4
+
+**User Story:** As a user with corporate discount codes, I want the system to intelligently handle code variations and brand restrictions, so that I don't waste time testing incompatible combinations or miss better rates from alternative code formats.
+
+#### Acceptance Criteria
+
+1. WHEN a corporate account has multiple Discount_Code variations, THE Hotel_Rate_Finder SHALL test all applicable formats automatically
+2. THE Hotel_Rate_Finder SHALL skip brand-incompatible codes during searches to improve efficiency
+3. WHEN displaying results, THE Hotel_Rate_Finder SHALL show which specific code variation produced each rate
+4. THE Hotel_Rate_Finder SHALL prioritize system-wide percentage codes (like FedEx 10%) when applicable across all brands
+5. IF a Hotel_Brand has specific code restrictions, THEN THE Hotel_Rate_Finder SHALL only test compatible codes for that brand
+
+### Requirement 5
 
 **User Story:** As a frequent traveler, I want to save my search preferences and favorite discount codes, so that I can quickly repeat searches without re-entering the same information.
 

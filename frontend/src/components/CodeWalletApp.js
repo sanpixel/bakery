@@ -91,18 +91,18 @@ function CodeWalletApp() {
   return (
     <Container size="xl" py="md">
       {/* Newspaper Header */}
-      <Paper p="xl" mb="lg" withBorder style={{ backgroundColor: '#f8f9fa' }}>
+      <Paper p="xl" mb="lg" withBorder style={{ backgroundColor: '#ffffff', borderBottom: '3px solid #000' }}>
         <Group justify="space-between" align="center">
           <div>
             <Title order={1} style={{ fontFamily: 'Times New Roman, serif', fontSize: '2.5rem' }}>
               CodeWallet
             </Title>
-            <Text size="sm" c="dimmed" style={{ fontStyle: 'italic' }}>
+            <Text size="sm" c="dark" style={{ fontStyle: 'italic' }}>
               Hotel Rate Finder & Corporate Discount Manager
             </Text>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <Text size="xs" c="dimmed">
+            <Text size="xs" c="dark">
               {new Date().toLocaleDateString('en-US', { 
                 weekday: 'long', 
                 year: 'numeric', 
@@ -136,7 +136,7 @@ function CodeWalletApp() {
             <Title order={2} mb="md" style={{ borderBottom: '2px solid #000', paddingBottom: '0.5rem' }}>
               Hotel Search
             </Title>
-            <Text c="dimmed" mb="lg">
+            <Text c="dark" mb="lg">
               Find the best hotel rates using your corporate discount codes
             </Text>
             
@@ -187,16 +187,16 @@ function CodeWalletApp() {
             <Paper p="md" withBorder>
               <Text size="sm" fw={500} mb="xs">💡 Quick Tips</Text>
               <Stack gap="xs">
-                <Text size="xs" c="dimmed">
+                <Text size="xs" c="dark">
                   • Use natural language: "cheap hotel in NYC this weekend"
                 </Text>
-                <Text size="xs" c="dimmed">
+                <Text size="xs" c="dark">
                   • Add multiple discount codes for better savings
                 </Text>
-                <Text size="xs" c="dimmed">
+                <Text size="xs" c="dark">
                   • Compare Hilton vs Marriott rates side by side
                 </Text>
-                <Text size="xs" c="dimmed">
+                <Text size="xs" c="dark">
                   • Click on previous searches to repeat them
                 </Text>
               </Stack>
@@ -207,7 +207,7 @@ function CodeWalletApp() {
 
       {/* Footer */}
       <Divider my="xl" />
-      <Text ta="center" size="xs" c="dimmed">
+      <Text ta="center" size="xs" c="dark">
         CodeWallet Hotel Rate Finder - Find the best corporate rates across Hilton and Marriott properties
       </Text>
     </Container>
